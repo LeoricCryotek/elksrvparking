@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rv_quick_register_wizard_form" model="ir.ui.view">
+        <field name="name">elks.rv.quick.register.wizard.form</field>
+        <field name="model">elks.rv.quick.register.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Quick RV Registration">
+                <div class="alert alert-info mb-3" role="alert">
+                    <i class="fa fa-info-circle"/>
+                    Record an RV parking payment quickly. All guest info is
+                    optional — just enter nights, amount, and payment method.
+                </div>
+                <group>
+                    <group string="Payment">
+                        <field name="nights"/>
+                        <field name="nightly_rate"/>
+                        <field name="total_amount"/>
+                        <field name="payment_method"/>
+                    </group>
+                    <group string="Guest Info (optional)">
+                        <field name="guest_name"
+                               placeholder="Leave blank for anonymous"/>
+                        <field name="member_number"/>
+                        <field name="home_lodge_number"/>
+                        <field name="home_lodge_name"/>
+                        <field name="contact_phone"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="notes" placeholder="Vehicle description, notes..."/>
+                </group>
+                <footer>
+                    <button name="action_register" type="object"
+                            string="Register &amp; Collect Payment"
+                            class="btn-primary"
+                            icon="fa-check"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rv_quick_register" model="ir.actions.act_window">
+        <field name="name">Quick Register</field>
+        <field name="res_model">elks.rv.quick.register.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

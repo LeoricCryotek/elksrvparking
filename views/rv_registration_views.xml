@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         Form View
+         ============================================================ -->
+    <record id="view_rv_registration_form" model="ir.ui.view">
+        <field name="name">elks.rv.registration.form</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="arch" type="xml">
+            <form string="RV Parking Registration">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,registered,checked_out"/>
+
+                    <button name="action_register" type="object"
+                            string="Register"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_check_out" type="object"
+                            string="Check Out"
+                            class="btn-primary"
+                            invisible="state != 'registered'"/>
+
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            class="btn-danger"
+                            invisible="state in ('checked_out', 'cancelled')"/>
+
+                    <button name="action_reset_to_draft" type="object"
+                            string="Reset to Draft"
+                            invisible="state != 'cancelled'"/>
+
+                    <button name="action_extend_stay" type="object"
+                            string="Extend Stay"
+                            icon="fa-plus-circle"
+                            invisible="state not in ('draft', 'registered')"/>
+
+                    <button name="action_print_receipt" type="object"
+                            string="Preview Receipt"
+                            icon="fa-eye"
+                            invisible="state == 'draft'"/>
+                    <button name="action_download_receipt_pdf" type="object"
+                            string="Download Receipt PDF"
+                            icon="fa-download"
+                            invisible="state == 'draft'"/>
+
+                    <button name="action_print_blank_slip" type="object"
+                            string="Preview Blank Slip"
+                            icon="fa-eye"/>
+                    <button name="action_download_blank_slip_pdf" type="object"
+                            string="Download Blank Slip PDF"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Guest Information">
+                            <field name="is_unknown_member"
+                                   widget="boolean_toggle"
+                                   readonly="state != 'draft'"/>
+                            <field name="partner_id"
+                                   readonly="state != 'draft'"
+                                   invisible="is_unknown_member"
+                                   options="{'no_create': False}"/>
+                            <field name="guest_name"
+                                   readonly="state != 'draft'"
+                                   invisible="is_unknown_member"/>
+                            <field name="member_number"
+                                   readonly="state != 'draft'"
+                                   invisible="is_unknown_member"/>
+                            <field name="home_lodge_number"
+                                   readonly="state != 'draft'"
+                                   invisible="is_unknown_member"/>
+                            <field name="home_lodge_name"
+                                   readonly="state != 'draft'"
+                                   invisible="is_unknown_member"/>
+                            <field name="home_lodge_state"
+                                   readonly="state != 'draft'"
+                                   invisible="is_unknown_member"/>
+                            <field name="contact_phone"
+                                   widget="phone"
+                                   readonly="state != 'draft'"
+                                   invisible="is_unknown_member"/>
+                        </group>
+                        <group string="Stay Details">
+                            <field name="registration_date"
+                                   readonly="state != 'draft'"/>
+                            <field name="check_in"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="nights"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="check_out"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <separator string="Billing"/>
+                            <field name="nightly_rate"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="total_amount"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="amount_paid"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="payment_method"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="booking_source" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="FRS Journal Posting">
+                            <field name="post_to_frs"/>
+                            <field name="payment_account_id"
+                                   invisible="not post_to_frs"
+                                   required="post_to_frs"
+                                   readonly="state == 'checked_out'"
+                                   options="{'no_create': True}"/>
+                            <field name="journal_entry_id" readonly="1"
+                                   invisible="not journal_entry_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes" name="notes">
+                            <field name="notes"
+                                   placeholder="Vehicle description, special instructions, etc."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         List View
+         ============================================================ -->
+    <record id="view_rv_registration_tree" model="ir.ui.view">
+        <field name="name">elks.rv.registration.tree</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="arch" type="xml">
+            <list string="RV Registrations"
+                  decoration-info="state == 'registered'"
+                  decoration-success="state == 'checked_out'"
+                  decoration-danger="state == 'cancelled'">
+                <field name="name"/>
+                <field name="registration_date" optional="show"/>
+                <field name="check_in"/>
+                <field name="check_out" optional="show"/>
+                <field name="guest_name"/>
+                <field name="member_number" optional="show"/>
+                <field name="home_lodge_number" optional="show"/>
+                <field name="nights"/>
+                <field name="total_amount" sum="Suggested Total" optional="hide"/>
+                <field name="amount_paid" sum="Total Paid"/>
+                <field name="payment_method" optional="show"/>
+                <field name="booking_source" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'registered'"
+                       decoration-success="state == 'checked_out'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Search View
+         ============================================================ -->
+    <record id="view_rv_registration_search" model="ir.ui.view">
+        <field name="name">elks.rv.registration.search</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="arch" type="xml">
+            <search string="RV Registrations">
+                <field name="name"/>
+                <field name="guest_name"/>
+                <field name="member_number"/>
+                <field name="partner_id"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft / Reserved"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_registered" string="Currently Parked"
+                        domain="[('state', '=', 'registered')]"/>
+                <filter name="filter_checked_out" string="Checked Out"
+                        domain="[('state', '=', 'checked_out')]"/>
+                <filter name="filter_cancelled" string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="filter_unknown" string="Unknown Members"
+                        domain="[('is_unknown_member', '=', True)]"/>
+                <filter name="filter_today" string="Check-In Today"
+                        domain="[('check_in', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="filter_staff" string="Booked by Staff"
+                        domain="[('booking_source', '=', 'staff')]"/>
+                <filter name="filter_website" string="Booked Online"
+                        domain="[('booking_source', '=', 'website')]"/>
+                <group>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_checkin" string="Check-In Month"
+                            context="{'group_by': 'check_in:month'}"/>
+                    <filter name="group_payment" string="Payment Method"
+                            context="{'group_by': 'payment_method'}"/>
+                    <filter name="group_source" string="Booking Source"
+                            context="{'group_by': 'booking_source'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Calendar View
+         ============================================================ -->
+    <record id="view_rv_registration_calendar" model="ir.ui.view">
+        <field name="name">elks.rv.registration.calendar</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="arch" type="xml">
+            <calendar string="RV Occupancy"
+                      date_start="check_in"
+                      date_stop="check_out"
+                      color="state"
+                      mode="month"
+                      quick_create="0">
+                <field name="guest_name"/>
+                <field name="member_number"/>
+                <field name="home_lodge_name"/>
+                <field name="nights"/>
+                <field name="total_amount"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Actions
+         ============================================================ -->
+    <record id="action_rv_registrations" model="ir.actions.act_window">
+        <field name="name">RV Registrations</field>
+        <field name="res_model">elks.rv.registration</field>
+        <field name="view_mode">list,calendar,form</field>
+    </record>
+
+    <record id="action_rv_registrations_current" model="ir.actions.act_window">
+        <field name="name">Currently Parked</field>
+        <field name="res_model">elks.rv.registration</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'registered')]</field>
+    </record>
+
+</odoo>

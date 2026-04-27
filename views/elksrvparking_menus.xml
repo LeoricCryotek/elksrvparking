@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Top-level menu -->
+    <menuitem id="menu_rv_parking_root"
+              name="RV Parking"
+              web_icon="elksrvparking,static/description/icon.png"
+              groups="group_elksrvparking_user"
+              sequence="45"/>
+
+    <menuitem id="menu_rv_registrations"
+              name="Registrations"
+              parent="menu_rv_parking_root"
+              action="action_rv_registrations"
+              sequence="10"/>
+
+    <menuitem id="menu_rv_currently_parked"
+              name="Currently Parked"
+              parent="menu_rv_parking_root"
+              action="action_rv_registrations_current"
+              sequence="20"/>
+
+    <menuitem id="menu_rv_reports"
+              name="Reports"
+              parent="menu_rv_parking_root"
+              groups="group_elksrvparking_manager"
+              sequence="50"/>
+
+    <menuitem id="menu_rv_occupancy_report"
+              name="Occupancy Report"
+              parent="menu_rv_reports"
+              action="action_rv_occupancy_report_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_rv_configuration"
+              name="Configuration"
+              parent="menu_rv_parking_root"
+              action="action_rv_parking_config"
+              groups="group_elksrvparking_manager"
+              sequence="90"/>
+
+    <!-- Inject RV reports into Secretary → Reports menu -->
+    <menuitem id="menu_secretary_rv_occupancy_report"
+              name="RV Occupancy Report"
+              parent="elkssecretary.menu_elkssecretary_reports"
+              action="action_rv_occupancy_report_wizard"
+              sequence="30"/>
+
+
+</odoo>

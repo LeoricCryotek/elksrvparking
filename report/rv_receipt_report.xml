@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Report action — filled receipt -->
+    <record id="action_report_rv_receipt" model="ir.actions.report">
+        <field name="name">RV Parking Receipt</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">elksrvparking.report_rv_receipt</field>
+        <field name="report_file">elksrvparking.report_rv_receipt</field>
+        <field name="print_report_name">'RV_Receipt_%s' % object.name</field>
+        <field name="binding_model_id" ref="model_elks_rv_registration"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Companion PDF report for download -->
+    <record id="action_report_rv_receipt_pdf" model="ir.actions.report">
+        <field name="name">RV Parking Receipt (PDF)</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">elksrvparking.report_rv_receipt</field>
+        <field name="report_file">elksrvparking.report_rv_receipt</field>
+        <field name="print_report_name">'RV_Receipt_%s' % object.name</field>
+        <field name="binding_model_id" ref="model_elks_rv_registration"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- QWeb template — filled receipt -->
+    <template id="report_rv_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.internal_layout">
+                    <t t-set="settings"
+                       t-value="doc.env['elks.lodge.settings'].sudo().search([], limit=1)"/>
+
+                    <div class="page" style="font-family: Arial, sans-serif;">
+
+                        <!-- ===== LODGE HEADER ===== -->
+                        <table style="width: 100%; margin-bottom: 16px; border: none;">
+                            <tr>
+                                <td style="width: 15%; text-align: center; vertical-align: middle; border: none; padding: 0;">
+                                    <t t-if="settings and settings.logo_primary">
+                                        <img t-att-src="image_data_uri(settings.logo_primary)"
+                                             style="max-height: 70px; max-width: 90px;" alt="Elks USA"/>
+                                    </t>
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: none; padding: 0 10px;">
+                                    <h2 style="font-size: 24px; margin: 0 0 2px 0; color: #333;">
+                                        <t t-if="settings and settings.name">
+                                            <span t-field="settings.name"/>
+                                        </t>
+                                        <t t-else="">Elks Lodge</t>
+                                        <t t-if="settings and settings.lodge_number">
+                                            #<span t-field="settings.lodge_number"/>
+                                        </t>
+                                    </h2>
+                                    <p style="color: #777; font-size: 11px; margin: 0;">
+                                        Benevolent and Protective Order of Elks
+                                    </p>
+                                    <h3 style="font-size: 18px; margin: 6px 0 0 0; color: #2e7d32;">
+                                        RV Parking Registration Receipt
+                                    </h3>
+                                </td>
+                                <td style="width: 15%; border: none; padding: 0;">
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="border-top: 2px solid #2e7d32; margin-bottom: 16px;"/>
+
+                        <!-- Reference and Date -->
+                        <table style="width: 100%; margin-bottom: 16px; border: none;">
+                            <tr>
+                                <td style="border: none; font-size: 13px;">
+                                    <strong>Registration #:</strong>
+                                    <span t-field="doc.name"
+                                          style="font-size: 15px; font-weight: bold; color: #2e7d32;"/>
+                                </td>
+                                <td style="border: none; text-align: right; font-size: 13px;">
+                                    <strong>Date:</strong>
+                                    <span t-field="doc.check_in"
+                                          t-options='{"widget": "date", "format": "MM/dd/yyyy"}'/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Registration Details -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                            <tr style="background: #e8f5e9;">
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; width: 30%; font-weight: bold; color: #555;">
+                                    Guest Name
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-size: 14px;">
+                                    <t t-if="doc.is_unknown_member">
+                                        <span style="color: #999; font-style: italic;">Unknown Member</span>
+                                    </t>
+                                    <t t-elif="doc.guest_name"><span t-field="doc.guest_name"/></t>
+                                    <t t-elif="doc.partner_id"><span t-field="doc.partner_id"/></t>
+                                </td>
+                            </tr>
+                            <t t-if="not doc.is_unknown_member">
+                            <tr>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Member #
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    <span t-field="doc.member_number"/>
+                                </td>
+                            </tr>
+                            <tr style="background: #e8f5e9;">
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Home Lodge
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    <t t-if="doc.home_lodge_number">
+                                        #<span t-field="doc.home_lodge_number"/>
+                                    </t>
+                                    <t t-if="doc.home_lodge_name">
+                                        — <span t-field="doc.home_lodge_name"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Contact Phone
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    <span t-field="doc.contact_phone"/>
+                                </td>
+                            </tr>
+                            </t>
+                            <tr style="background: #e8f5e9;">
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Check-In
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    <span t-field="doc.check_in"
+                                          t-options='{"widget": "date", "format": "MM/dd/yyyy"}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Check-Out
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    <t t-if="doc.check_out">
+                                        <span t-field="doc.check_out"
+                                              t-options='{"widget": "date", "format": "MM/dd/yyyy"}'/>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="color: #999;">TBD</span>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr style="background: #e8f5e9;">
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Nights
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    <span t-field="doc.nights"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Nightly Rate
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    $<span t-field="doc.nightly_rate"
+                                           t-options='{"precision": 2}'/>
+                                </td>
+                            </tr>
+                            <tr style="background: #e8f5e9;">
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Total Donated
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-size: 16px; font-weight: bold; color: #2e7d32;">
+                                    $<span t-field="doc.total_amount"
+                                           t-options='{"precision": 2}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px; font-weight: bold; color: #555;">
+                                    Payment Method
+                                </td>
+                                <td style="border: 1px solid #ccc; padding: 8px 12px;">
+                                    <span t-field="doc.payment_method"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <t t-if="doc.notes">
+                            <p style="font-size: 12px; color: #555;">
+                                <strong>Notes:</strong> <span t-field="doc.notes"/>
+                            </p>
+                        </t>
+
+                        <!-- Signature lines -->
+                        <div style="margin-top: 40px;">
+                            <table style="width: 100%; border: none;">
+                                <tr>
+                                    <td style="width: 45%; border: none; padding-top: 30px;">
+                                        <div style="border-top: 1px solid #333; padding-top: 4px; text-align: center; font-size: 11px; color: #555;">
+                                            Staff Signature
+                                        </div>
+                                    </td>
+                                    <td style="width: 10%; border: none;"/>
+                                    <td style="width: 45%; border: none; padding-top: 30px;">
+                                        <div style="border-top: 1px solid #333; padding-top: 4px; text-align: center; font-size: 11px; color: #555;">
+                                            Guest Signature
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Footer note -->
+                        <p style="text-align: center; font-size: 9px; color: #aaa; margin-top: 24px;">
+                            RV parking is first-come, first-served. Suggested donation:
+                            $<t t-if="settings and settings.rv_nightly_rate">
+                                <span t-field="settings.rv_nightly_rate"/>
+                            </t>
+                            <t t-else="">25.00</t>
+                            per night. Thank you for your generous support of
+                            <t t-if="settings and settings.name">
+                                <span t-field="settings.name"/>
+                            </t>
+                            <t t-else="">our Lodge</t>.
+                        </p>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

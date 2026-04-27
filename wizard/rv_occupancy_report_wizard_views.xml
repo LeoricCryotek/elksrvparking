@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rv_occupancy_report_wizard_form" model="ir.ui.view">
+        <field name="name">elks.rv.occupancy.report.wizard.form</field>
+        <field name="model">elks.rv.occupancy.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="RV Occupancy Report">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                    </group>
+                    <group>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_report" type="object"
+                            string="Preview" class="btn-primary"
+                            icon="fa-eye"/>
+                    <button name="action_download_pdf" type="object"
+                            string="Download PDF" class="btn-secondary"
+                            icon="fa-download"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rv_occupancy_report_wizard" model="ir.actions.act_window">
+        <field name="name">RV Occupancy Report</field>
+        <field name="res_model">elks.rv.occupancy.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

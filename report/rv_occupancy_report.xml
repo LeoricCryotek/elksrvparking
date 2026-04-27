@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_rv_occupancy" model="ir.actions.report">
+        <field name="name">RV Occupancy Report</field>
+        <field name="model">elks.rv.occupancy.report.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">elksrvparking.rv_occupancy_report_template</field>
+        <field name="report_file">elksrvparking.rv_occupancy_report_template</field>
+        <field name="paperformat_id" ref="base.paperformat_us"/>
+    </record>
+
+    <!-- Companion PDF report for download -->
+    <record id="action_report_rv_occupancy_pdf" model="ir.actions.report">
+        <field name="name">RV Occupancy Report (PDF)</field>
+        <field name="model">elks.rv.occupancy.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">elksrvparking.rv_occupancy_report_template</field>
+        <field name="report_file">elksrvparking.rv_occupancy_report_template</field>
+        <field name="paperformat_id" ref="base.paperformat_us"/>
+    </record>
+
+    <template id="rv_occupancy_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wiz">
+                <t t-set="d" t-value="wiz._prepare_report_data()"/>
+                <t t-set="settings" t-value="wiz.env['elks.lodge.settings'].sudo().search([], limit=1)"/>
+                <div class="page" style="font-family: Arial, sans-serif; font-size: 12px;">
+
+                    <!-- Header: logo left, title center -->
+                    <table style="width: 100%; margin-bottom: 12px;">
+                        <tr>
+                            <td style="width: 80px; vertical-align: top;">
+                                <t t-if="settings and settings.logo_primary">
+                                    <img t-att-src="image_data_uri(settings.logo_primary)"
+                                         style="max-height: 70px; max-width: 70px;"
+                                         alt="Elks Logo"/>
+                                </t>
+                            </td>
+                            <td style="vertical-align: middle; text-align: center;">
+                                <h2 style="margin: 0; color: #333;">
+                                    <t t-esc="d.get('lodge_name', 'Elks Lodge')"/>
+                                    <t t-if="d.get('lodge_number')">
+                                        #<t t-esc="d.get('lodge_number')"/>
+                                    </t>
+                                </h2>
+                                <h3 style="margin: 4px 0 0 0; color: #2e7d32;">
+                                    RV Parking — Occupancy &amp; Usage Report
+                                </h3>
+                                <p style="margin: 4px 0; color: #666;">
+                                    <t t-esc="d.get('date_from')"/> through <t t-esc="d.get('date_to')"/>
+                                </p>
+                            </td>
+                            <td style="width: 80px;"/>
+                        </tr>
+                    </table>
+
+                    <hr style="border-top: 2px solid #2e7d32; margin: 8px 0 16px 0;"/>
+
+                    <!-- Summary KPI Cards -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <td style="width: 20%; text-align: center; padding: 10px; border: 1px solid #ddd; background: #f0f8f0;">
+                                <div style="font-size: 24px; font-weight: bold; color: #2e7d32;">
+                                    <t t-esc="d.get('date_range_days', 0)"/>
+                                </div>
+                                <div style="font-size: 11px; color: #666;">Days in Period</div>
+                            </td>
+                            <td style="width: 20%; text-align: center; padding: 10px; border: 1px solid #ddd; background: #f0f8f0;">
+                                <div style="font-size: 24px; font-weight: bold; color: #2e7d32;">
+                                    <t t-esc="d.get('total_regs', 0)"/>
+                                </div>
+                                <div style="font-size: 11px; color: #666;">Total Registrations</div>
+                            </td>
+                            <td style="width: 20%; text-align: center; padding: 10px; border: 1px solid #ddd; background: #f0f8f0;">
+                                <div style="font-size: 24px; font-weight: bold; color: #2e7d32;">
+                                    <t t-esc="d.get('total_nights', 0)"/>
+                                </div>
+                                <div style="font-size: 11px; color: #666;">Nights Sold</div>
+                            </td>
+                            <td style="width: 20%; text-align: center; padding: 10px; border: 1px solid #ddd; background: #e8f5e9;">
+                                <div style="font-size: 24px; font-weight: bold; color: #1b5e20;">
+                                    <t t-esc="d.get('occupancy_pct', 0)"/>%
+                                </div>
+                                <div style="font-size: 11px; color: #666;">Occupancy Rate</div>
+                            </td>
+                            <td style="width: 20%; text-align: center; padding: 10px; border: 1px solid #ddd; background: #e8f5e9;">
+                                <div style="font-size: 24px; font-weight: bold; color: #1b5e20;">
+                                    $<t t-esc="'%.2f' % d.get('total_paid', 0)"/>
+                                </div>
+                                <div style="font-size: 11px; color: #666;">Total Collected</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Capacity context -->
+                    <p style="font-size: 11px; color: #888; text-align: center; margin-bottom: 16px;">
+                        <t t-esc="d.get('total_spaces', 0)"/> spaces ×
+                        <t t-esc="d.get('date_range_days', 0)"/> days =
+                        <t t-esc="d.get('total_capacity', 0)"/> total space-nights available
+                    </p>
+
+                    <!-- Booking Source Breakdown -->
+                    <h4 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 8px;">
+                        Booking Source Breakdown
+                    </h4>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background: #2e7d32; color: white;">
+                                <th style="padding: 8px 12px; text-align: left;">Source</th>
+                                <th style="padding: 8px 12px; text-align: right;">Registrations</th>
+                                <th style="padding: 8px 12px; text-align: right;">Nights</th>
+                                <th style="padding: 8px 12px; text-align: right;">Amount Collected</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #ddd;">
+                                <td style="padding: 8px 12px;">Staff (in-person / phone)</td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    <t t-esc="d.get('staff_count', 0)"/>
+                                </td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    <t t-esc="d.get('staff_nights', 0)"/>
+                                </td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    $<t t-esc="'%.2f' % d.get('staff_paid', 0)"/>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #ddd;">
+                                <td style="padding: 8px 12px;">Website (self-booked)</td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    <t t-esc="d.get('web_count', 0)"/>
+                                </td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    <t t-esc="d.get('web_nights', 0)"/>
+                                </td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    $<t t-esc="'%.2f' % d.get('web_paid', 0)"/>
+                                </td>
+                            </tr>
+                            <tr style="background: #f5f5f5; font-weight: bold;">
+                                <td style="padding: 8px 12px;">Total</td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    <t t-esc="d.get('total_regs', 0)"/>
+                                </td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    <t t-esc="d.get('total_nights', 0)"/>
+                                </td>
+                                <td style="padding: 8px 12px; text-align: right;">
+                                    $<t t-esc="'%.2f' % d.get('total_paid', 0)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Revenue comparison -->
+                    <t t-if="d.get('total_suggested', 0) != d.get('total_paid', 0)">
+                        <p style="font-size: 11px; color: #888; margin-bottom: 16px;">
+                            Suggested donations totaled
+                            $<t t-esc="'%.2f' % d.get('total_suggested', 0)"/>;
+                            actual collections were
+                            $<t t-esc="'%.2f' % d.get('total_paid', 0)"/>
+                            (<t t-if="d.get('total_paid', 0) > d.get('total_suggested', 0)">+</t>$<t t-esc="'%.2f' % (d.get('total_paid', 0) - d.get('total_suggested', 0))"/>).
+                        </p>
+                    </t>
+
+                    <!-- Detail Table -->
+                    <h4 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 8px;">
+                        Registration Detail
+                    </h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                        <thead>
+                            <tr style="background: #333; color: white;">
+                                <th style="padding: 6px 8px; text-align: left;">Reg #</th>
+                                <th style="padding: 6px 8px; text-align: left;">Guest</th>
+                                <th style="padding: 6px 8px; text-align: center;">Check-In</th>
+                                <th style="padding: 6px 8px; text-align: center;">Check-Out</th>
+                                <th style="padding: 6px 8px; text-align: center;">Nights</th>
+                                <th style="padding: 6px 8px; text-align: right;">Suggested</th>
+                                <th style="padding: 6px 8px; text-align: right;">Paid</th>
+                                <th style="padding: 6px 8px; text-align: center;">Source</th>
+                                <th style="padding: 6px 8px; text-align: center;">Payment</th>
+                                <th style="padding: 6px 8px; text-align: center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="d.get('lines', [])" t-as="line">
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 5px 8px;">
+                                        <t t-esc="line.get('name')"/>
+                                    </td>
+                                    <td style="padding: 5px 8px;">
+                                        <t t-esc="line.get('guest_name')"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: center;">
+                                        <t t-esc="line.get('check_in')"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: center;">
+                                        <t t-esc="line.get('check_out')"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: center;">
+                                        <t t-esc="line.get('nights')"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: right;">
+                                        $<t t-esc="'%.2f' % line.get('total_amount', 0)"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: right;">
+                                        $<t t-esc="'%.2f' % line.get('amount_paid', 0)"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: center;">
+                                        <t t-esc="line.get('booking_source')"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: center;">
+                                        <t t-esc="line.get('payment_method')"/>
+                                    </td>
+                                    <td style="padding: 5px 8px; text-align: center;">
+                                        <t t-esc="line.get('state')"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <!-- Footer -->
+                    <p style="font-size: 9px; color: #aaa; text-align: center; margin-top: 20px;">
+                        Generated from Elks RV Parking module
+                    </p>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

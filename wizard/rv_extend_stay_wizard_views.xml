@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rv_extend_stay_wizard_form" model="ir.ui.view">
+        <field name="name">elks.rv.extend.stay.wizard.form</field>
+        <field name="model">elks.rv.extend.stay.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Extend Stay">
+                <group>
+                    <field name="registration_id" invisible="1"/>
+                    <field name="current_nights"/>
+                    <field name="max_nights"/>
+                    <field name="extra_nights"/>
+                    <field name="new_total"/>
+                </group>
+                <footer>
+                    <button name="action_extend" type="object"
+                            string="Extend Stay" class="btn-primary"
+                            icon="fa-plus-circle"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

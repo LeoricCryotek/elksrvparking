@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Standalone RV config form (same singleton record, RV fields only) -->
+    <record id="view_rv_config_form" model="ir.ui.view">
+        <field name="name">elks.lodge.settings.form.rv.config</field>
+        <field name="model">elks.lodge.settings</field>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <form string="RV Parking Configuration" create="false" delete="false">
+                <sheet>
+                    <group string="Capacity &amp; Rates">
+                        <field name="rv_total_spaces"/>
+                        <field name="rv_nightly_rate"/>
+                        <field name="rv_max_nights"/>
+                        <field name="rv_warning_threshold"/>
+                    </group>
+                    <group string="Accounting">
+                        <field name="rv_income_account_id"
+                               string="Income Account"
+                               options="{'no_create': True}"
+                               help="Elks GL account credited when an RV parking donation is posted to the FRS journal."/>
+                    </group>
+                    <group string="RV Parking Address">
+                        <field name="rv_use_lodge_address"
+                               widget="boolean_toggle"
+                               help="Toggle on to copy the lodge address from FRS Lodge Settings into the fields below."/>
+                        <field name="rv_address"
+                               placeholder="3444 10th St (RV lot entrance)"
+                               help="If left blank, the lodge address from Lodge Settings is used for the map."/>
+                        <field name="rv_city" placeholder="Lewiston"/>
+                        <field name="rv_state" placeholder="ID"/>
+                        <field name="rv_zip" placeholder="83501"/>
+                    </group>
+                    <group string="Auto Check-Out">
+                        <field name="rv_auto_checkout"
+                               widget="boolean_toggle"
+                               help="Automatically check out guests at their scheduled end of stay."/>
+                        <field name="rv_checkout_hour"
+                               invisible="not rv_auto_checkout"
+                               help="Hour of day (24h format) when the auto-checkout runs. Default: 15 (3:00 PM)."/>
+                    </group>
+                    <group string="Website">
+                        <field name="rv_website_published"
+                               widget="boolean_toggle"
+                               help="Show an 'RV Parking' link in the public website navigation menu."/>
+                        <field name="rv_notification_email"
+                               placeholder="rvparking@lodge896.org"
+                               help="Email address notified when a guest submits a reservation request from the public website."/>
+                    </group>
+                    <group string="Guest Registration Slip">
+                        <field name="rv_slip_note" placeholder="e.g. Check in at the lodge office. Wi-Fi: ElksGuest / password123. Quiet hours 10pm-7am."
+                               help="This note appears in a highlighted info box on the thank-you page and printable guest registration slip."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Server action that finds the singleton and opens the RV config form -->
+    <record id="action_rv_parking_config" model="ir.actions.server">
+        <field name="name">RV Parking Settings</field>
+        <field name="model_id" ref="elksfrs.model_elks_lodge_settings"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_rv_config()</field>
+    </record>
+
+</odoo>

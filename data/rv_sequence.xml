@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_rv_registration" model="ir.sequence">
+        <field name="name">RV Parking Registration</field>
+        <field name="code">elks.rv.registration</field>
+        <field name="prefix">RV-%(year)s-</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

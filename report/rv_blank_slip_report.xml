@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Report action — blank slip (callable from any registration or a server action) -->
+    <record id="action_report_rv_blank_slip" model="ir.actions.report">
+        <field name="name">RV Blank Registration Slip</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">elksrvparking.report_rv_blank_slip</field>
+        <field name="report_file">elksrvparking.report_rv_blank_slip</field>
+        <field name="print_report_name">'RV_Blank_Slip'</field>
+    </record>
+
+    <!-- Companion PDF report for download -->
+    <record id="action_report_rv_blank_slip_pdf" model="ir.actions.report">
+        <field name="name">RV Blank Registration Slip (PDF)</field>
+        <field name="model">elks.rv.registration</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">elksrvparking.report_rv_blank_slip</field>
+        <field name="report_file">elksrvparking.report_rv_blank_slip</field>
+        <field name="print_report_name">'RV_Blank_Slip'</field>
+    </record>
+
+    <!-- QWeb template — blank hand-write slip with tear-off guest stub -->
+    <template id="report_rv_blank_slip">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.internal_layout">
+                    <t t-set="settings"
+                       t-value="doc.env['elks.lodge.settings'].sudo().search([], limit=1)"/>
+
+                    <div class="page" style="font-family: Arial, sans-serif;">
+
+                        <!-- ===== LODGE HEADER ===== -->
+                        <table style="width: 100%; margin-bottom: 12px; border: none;">
+                            <tr>
+                                <td style="width: 15%; text-align: center; vertical-align: middle; border: none; padding: 0;">
+                                    <t t-if="settings and settings.logo_primary">
+                                        <img t-att-src="image_data_uri(settings.logo_primary)"
+                                             style="max-height: 60px; max-width: 80px;" alt="Elks USA"/>
+                                    </t>
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: none; padding: 0 10px;">
+                                    <h2 style="font-size: 22px; margin: 0 0 2px 0; color: #333;">
+                                        <t t-if="settings and settings.name">
+                                            <span t-field="settings.name"/>
+                                        </t>
+                                        <t t-else="">Elks Lodge</t>
+                                        <t t-if="settings and settings.lodge_number">
+                                            #<span t-field="settings.lodge_number"/>
+                                        </t>
+                                    </h2>
+                                    <p style="color: #777; font-size: 10px; margin: 0;">
+                                        Benevolent and Protective Order of Elks
+                                    </p>
+                                    <h3 style="font-size: 16px; margin: 4px 0 0 0; color: #2e7d32;">
+                                        RV Parking Registration
+                                    </h3>
+                                </td>
+                                <td style="width: 15%; border: none; padding: 0;">
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="border-top: 2px solid #2e7d32; margin-bottom: 14px;"/>
+
+                        <p style="font-size: 11px; color: #555; text-align: center; margin-bottom: 14px;">
+                            RV parking is first-come, first-served. Suggested donation:
+                            <strong>
+                                $<t t-if="settings and settings.rv_nightly_rate">
+                                    <span t-field="settings.rv_nightly_rate"/>
+                                </t>
+                                <t t-else="">25.00</t>
+                                per night.
+                            </strong>
+                            Please complete this form and return it with your donation to the lodge office.
+                        </p>
+
+                        <!-- ===== BLANK FORM — LODGE COPY ===== -->
+                        <p style="font-size: 10px; font-weight: bold; color: #999; text-transform: uppercase; margin-bottom: 6px;">
+                            Lodge Copy
+                        </p>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; width: 30%; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Member Name
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Member #
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Home Lodge # &amp; Name
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Contact Phone
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Check-In Date
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Check-Out Date
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    # of Nights
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Amount Donated ($)
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; height: 28px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-weight: bold; font-size: 12px; color: #555; background: #f5f5f5;">
+                                    Payment Method
+                                </td>
+                                <td style="border: 1px solid #aaa; padding: 8px 10px; font-size: 11px; color: #777; height: 28px;">
+                                    Cash &#160;&#160; / &#160;&#160; Check &#160;&#160; / &#160;&#160; Card &#160;&#160; / &#160;&#160; Other
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Staff signature -->
+                        <table style="width: 100%; border: none; margin-top: 20px; margin-bottom: 10px;">
+                            <tr>
+                                <td style="width: 45%; border: none; padding-top: 24px;">
+                                    <div style="border-top: 1px solid #333; padding-top: 3px; text-align: center; font-size: 10px; color: #555;">
+                                        Staff Signature
+                                    </div>
+                                </td>
+                                <td style="width: 10%; border: none;"/>
+                                <td style="width: 20%; border: none; padding-top: 24px;">
+                                    <div style="border-top: 1px solid #333; padding-top: 3px; text-align: center; font-size: 10px; color: #555;">
+                                        Date
+                                    </div>
+                                </td>
+                                <td style="width: 25%; border: none;"/>
+                            </tr>
+                        </table>
+
+                        <!-- ========================================
+                             CUT LINE — TEAR-OFF GUEST RECEIPT
+                             ======================================== -->
+                        <div style="margin: 24px 0 20px 0; border-top: 2px dashed #999; position: relative;">
+                            <span style="position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; font-size: 9px; color: #999; letter-spacing: 1px;">
+                                &#9986; CUT HERE — GUEST RECEIPT BELOW &#9986;
+                            </span>
+                        </div>
+
+                        <!-- ===== GUEST RECEIPT STUB ===== -->
+                        <table style="width: 100%; margin-bottom: 8px; border: none;">
+                            <tr>
+                                <td style="width: 15%; text-align: center; vertical-align: middle; border: none; padding: 0;">
+                                    <t t-if="settings and settings.logo_primary">
+                                        <img t-att-src="image_data_uri(settings.logo_primary)"
+                                             style="max-height: 40px; max-width: 50px;" alt="Elks"/>
+                                    </t>
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: none;">
+                                    <strong style="font-size: 14px; color: #333;">
+                                        <t t-if="settings and settings.name">
+                                            <span t-field="settings.name"/>
+                                        </t>
+                                        <t t-else="">Elks Lodge</t>
+                                        <t t-if="settings and settings.lodge_number">
+                                            #<span t-field="settings.lodge_number"/>
+                                        </t>
+                                    </strong>
+                                    <br/>
+                                    <span style="font-size: 12px; color: #2e7d32; font-weight: bold;">
+                                        RV Parking — Guest Receipt
+                                    </span>
+                                </td>
+                                <td style="width: 15%; border: none;"/>
+                            </tr>
+                        </table>
+
+                        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                            <tr>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; width: 25%; font-weight: bold; background: #f5f5f5;">
+                                    Name
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; width: 25%; height: 22px;">
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; width: 20%; font-weight: bold; background: #f5f5f5;">
+                                    Member #
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; width: 30%; height: 22px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; font-weight: bold; background: #f5f5f5;">
+                                    Home Lodge
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; height: 22px;" colspan="3">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; font-weight: bold; background: #f5f5f5;">
+                                    Check-In
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; height: 22px;">
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; font-weight: bold; background: #f5f5f5;">
+                                    # Nights
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; height: 22px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; font-weight: bold; background: #f5f5f5;">
+                                    Amount ($)
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; height: 22px;">
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; font-weight: bold; background: #f5f5f5;">
+                                    Payment
+                                </td>
+                                <td style="border: 1px solid #bbb; padding: 5px 8px; font-size: 10px; color: #777;">
+                                    Cash / Check / Card / Other
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="text-align: center; font-size: 8px; color: #aaa; margin-top: 8px;">
+                            Thank you for your donation! RV parking is first-come, first-served.
+                        </p>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
