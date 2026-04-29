@@ -33,7 +33,7 @@ class RvRegistration(models.Model):
         help="Name as written if not linked to a contact.",
     )
     member_number = fields.Char(
-        string="Member #", tracking=True,
+        string="Member #", required=True, tracking=True,
     )
     home_lodge_number = fields.Char(
         string="Home Lodge #", tracking=True,

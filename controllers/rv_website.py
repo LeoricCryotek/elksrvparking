@@ -231,8 +231,31 @@ class RvParkingWebsite(http.Controller):
         except (ValueError, TypeError):
             check_in_date = date.today()
 
-        # --- Availability check: reject if any night in the stay is full ---
         total_spaces = settings.rv_total_spaces if settings else 10
+
+        # --- Require member number ---
+        if not member_number:
+            nightly_rate = settings.rv_nightly_rate if settings else 25.0
+            return request.render("elksrvparking.rv_request_page", {
+                "settings": settings,
+                "nightly_rate": nightly_rate,
+                "total_spaces": total_spaces,
+                "max_nights": max_nights,
+                "today": date.today().isoformat(),
+                "check_in": check_in_str,
+                "nights": nights,
+                "lodge_name": settings.name if settings else "Elks Lodge",
+                "lodge_number": settings.lodge_number if settings else "",
+                "error": "Elks Member # is required to book an RV spot.",
+                "guest_name": guest_name,
+                "member_number": member_number,
+                "home_lodge_number": home_lodge_number,
+                "home_lodge_name": home_lodge_name,
+                "home_lodge_state": home_lodge_state,
+                "contact_phone": contact_phone,
+            })
+
+        # --- Availability check: reject if any night in the stay is full ---
         full_dates = []
         for i in range(nights):
             d = check_in_date + timedelta(days=i)

@@ -6,7 +6,7 @@ class RvQuickRegisterWizard(models.TransientModel):
     _description = "Quick RV Registration"
 
     guest_name = fields.Char(string="Guest Name (optional)")
-    member_number = fields.Char(string="Member # (optional)")
+    member_number = fields.Char(string="Member #", required=True)
     home_lodge_number = fields.Char(string="Home Lodge # (optional)")
     home_lodge_name = fields.Char(string="Home Lodge Name (optional)")
     contact_phone = fields.Char(string="Contact Phone (optional)")

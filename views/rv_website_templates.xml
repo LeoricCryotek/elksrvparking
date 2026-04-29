@@ -221,12 +221,12 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="member_number" class="form-label">
-                                            Elks Member #
+                                            Elks Member # <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" name="member_number"
                                                id="member_number" class="form-control"
                                                pattern="[0-9]*" inputmode="numeric"
-                                               title="Numbers only"
+                                               title="Numbers only" required="required"
                                                t-att-value="member_number if member_number else ''"
                                                placeholder="e.g. 654321"/>
                                     </div>
