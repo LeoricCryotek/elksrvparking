@@ -75,14 +75,14 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <a t-attf-href="/rv-parking?month=#{prev_month}&amp;year=#{prev_year}"
                            class="btn btn-outline-secondary">
-                            <i class="fa fa-chevron-left"/> Previous
+                            <i class="fa fa-chevron-left" title="Previous"/> Previous
                         </a>
                         <h3 class="mb-0">
                             <t t-esc="month_name"/> <t t-esc="year"/>
                         </h3>
                         <a t-attf-href="/rv-parking?month=#{next_month}&amp;year=#{next_year}"
                            class="btn btn-outline-secondary">
-                            Next <i class="fa fa-chevron-right"/>
+                            Next <i class="fa fa-chevron-right" title="Next"/>
                         </a>
                     </div>
 
@@ -147,7 +147,7 @@
                     <div class="text-center mb-5">
                         <a href="/rv-parking/request"
                            class="btn btn-primary btn-lg px-5">
-                            <i class="fa fa-calendar-plus-o me-2"/>
+                            <i class="fa fa-calendar-plus-o me-2" title="Add Date"/>
                             Request a Reservation
                         </a>
                     </div>
@@ -176,7 +176,7 @@
 
                     <div class="text-center mb-4">
                         <h2 class="text-primary">
-                            <i class="fa fa-calendar-plus-o me-2"/>
+                            <i class="fa fa-calendar-plus-o me-2" title="Add Date"/>
                             RV Parking Reservation Request
                         </h2>
                         <p class="text-muted">
@@ -192,7 +192,7 @@
                     <!-- Error alert for availability / validation -->
                     <t t-if="error">
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fa fa-exclamation-triangle me-2"/>
+                            <i class="fa fa-exclamation-triangle me-2" title="Warning"/>
                             <t t-esc="error"/>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"
                                     aria-label="Close"/>
@@ -356,7 +356,7 @@
 
                                 <div class="d-grid gap-2 mt-3">
                                     <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fa fa-paper-plane me-2"/>
+                                        <i class="fa fa-paper-plane me-2" title="Submit"/>
                                         Submit Reservation Request
                                     </button>
                                 </div>
@@ -372,7 +372,7 @@
 
                     <div class="text-center mt-3">
                         <a href="/rv-parking" class="btn btn-outline-secondary">
-                            <i class="fa fa-arrow-left me-1"/>
+                            <i class="fa fa-arrow-left me-1" title="Back"/>
                             Back to Availability Calendar
                         </a>
                     </div>
@@ -418,7 +418,7 @@
                 <div class="container py-5 text-center" style="max-width: 600px;">
 
                     <div class="mb-4">
-                        <i class="fa fa-check-circle text-success" style="font-size: 64px;"/>
+                        <i class="fa fa-check-circle text-success" style="font-size: 64px;" title="Done"/>
                     </div>
 
                     <h2 class="text-primary mb-3">Reservation Request Submitted!</h2>
@@ -457,7 +457,7 @@
                     <t t-if="rv_slip_note">
                         <div class="alert alert-info text-start mt-4" role="alert"
                              style="max-width: 560px; margin: 0 auto;">
-                            <i class="fa fa-info-circle me-2"/>
+                            <i class="fa fa-info-circle me-2" title="Info"/>
                             <strong>Note from the Lodge:</strong>
                             <div class="mt-1" style="white-space: pre-line;">
                                 <t t-esc="rv_slip_note"/>
@@ -469,7 +469,7 @@
                     <t t-if="map_query">
                         <div class="mt-4 mb-3">
                             <h5 class="text-muted mb-2">
-                                <i class="fa fa-map-marker me-1"/>
+                                <i class="fa fa-map-marker me-1" title="Location"/>
                                 Find Us
                             </h5>
                             <p class="text-muted small mb-2">
@@ -489,11 +489,11 @@
                     <div class="d-flex justify-content-center gap-3 mt-3">
                         <a t-attf-href="/rv-parking/receipt/#{reg.id}"
                            class="btn btn-success" target="_blank">
-                            <i class="fa fa-print me-1"/>
+                            <i class="fa fa-print me-1" title="Print"/>
                             Print Registration Slip
                         </a>
                         <a href="/rv-parking" class="btn btn-outline-primary">
-                            <i class="fa fa-arrow-left me-1"/>
+                            <i class="fa fa-arrow-left me-1" title="Back"/>
                             Back to Availability
                         </a>
                     </div>
@@ -532,7 +532,7 @@
                     <!-- Print button (hidden on print) -->
                     <div class="text-center mb-4 d-print-none">
                         <button class="btn btn-primary btn-lg" onclick="window.print()">
-                            <i class="fa fa-print me-2"/>
+                            <i class="fa fa-print me-2" title="Print"/>
                             Print Registration Slip
                         </button>
                     </div>
@@ -656,7 +656,7 @@
                         <t t-if="rv_slip_note">
                             <div class="rv-slip-note" style="background: #e8f4fd; border: 1px solid #b8daff; border-radius: 6px; padding: 10px 14px; margin-bottom: 12px;">
                                 <div style="font-size: 12px; font-weight: bold; color: #004085; margin-bottom: 4px;">
-                                    <i class="fa fa-info-circle me-1"/> Note from the Lodge
+                                    <i class="fa fa-info-circle me-1" title="Info"/> Note from the Lodge
                                 </div>
                                 <div style="font-size: 12px; color: #004085; white-space: pre-line;">
                                     <t t-esc="rv_slip_note"/>
@@ -679,7 +679,7 @@
                     <t t-if="map_query">
                         <div class="text-center mt-3">
                             <h6 class="text-muted mb-2">
-                                <i class="fa fa-map-marker me-1"/>
+                                <i class="fa fa-map-marker me-1" title="Location"/>
                                 <t t-esc="map_address"/>
                             </h6>
 
@@ -712,7 +712,7 @@
                     <!-- Back link (hidden on print) -->
                     <div class="text-center mt-3 d-print-none">
                         <a href="/rv-parking" class="btn btn-outline-secondary">
-                            <i class="fa fa-arrow-left me-1"/>
+                            <i class="fa fa-arrow-left me-1" title="Back"/>
                             Back to Availability
                         </a>
                     </div>

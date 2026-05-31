@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <form string="Quick RV Registration">
                 <div class="alert alert-info mb-3" role="alert">
-                    <i class="fa fa-info-circle"/>
+                    <i class="fa fa-info-circle" title="Info"/>
                     Record an RV parking payment quickly. All guest info is
                     optional — just enter nights, amount, and payment method.
                 </div>
