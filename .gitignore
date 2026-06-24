@@ -1,0 +1,8 @@
+# Python bytecode — never commit these; stale .pyc can shadow source on the server
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS / editor cruft
+.DS_Store
+*.swp
