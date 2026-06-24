@@ -15,6 +15,13 @@ class RvParkingWebsite(http.Controller):
     def _get_settings(self):
         return request.env["elks.lodge.settings"].sudo().search([], limit=1)
 
+    def _get_services(self, settings):
+        """Return the RV services to display on public pages (on-site or
+        nearby, flagged Show on Website)."""
+        if not settings:
+            return request.env["elks.rv.service"].sudo().browse()
+        return settings.get_website_rv_services()
+
     def _get_map_address(self, settings):
         """Build a one-line address for Google Maps, preferring RV-specific
         address fields and falling back to the lodge address."""
@@ -126,6 +133,7 @@ class RvParkingWebsite(http.Controller):
 
         return request.render("elksrvparking.rv_availability_page", {
             "settings": settings,
+            "services": self._get_services(settings),
             "lodge_name": lodge_name,
             "lodge_number": lodge_number,
             "total_spaces": total_spaces,
@@ -191,6 +199,7 @@ class RvParkingWebsite(http.Controller):
 
         return request.render("elksrvparking.rv_request_page", {
             "settings": settings,
+            "services": self._get_services(settings),
             "nightly_rate": nightly_rate,
             "total_spaces": total_spaces,
             "max_nights": max_nights or 30,
@@ -238,6 +247,7 @@ class RvParkingWebsite(http.Controller):
             nightly_rate = settings.rv_nightly_rate if settings else 25.0
             return request.render("elksrvparking.rv_request_page", {
                 "settings": settings,
+                "services": self._get_services(settings),
                 "nightly_rate": nightly_rate,
                 "total_spaces": total_spaces,
                 "max_nights": max_nights,
@@ -271,6 +281,7 @@ class RvParkingWebsite(http.Controller):
             )
             return request.render("elksrvparking.rv_request_page", {
                 "settings": settings,
+                "services": self._get_services(settings),
                 "nightly_rate": nightly_rate,
                 "total_spaces": total_spaces,
                 "max_nights": max_nights or 30,
@@ -346,6 +357,7 @@ class RvParkingWebsite(http.Controller):
         rv_slip_note = settings.rv_slip_note if settings else ""
         return request.render("elksrvparking.rv_request_thanks", {
             "reg": reg,
+            "services": self._get_services(settings),
             "lodge_name": lodge_name,
             "map_address": map_address,
             "map_query": quote_plus(map_address) if map_address else "",
@@ -393,6 +405,7 @@ class RvParkingWebsite(http.Controller):
         return request.render("elksrvparking.rv_guest_receipt_page", {
             "reg": reg,
             "settings": settings,
+            "services": self._get_services(settings),
             "lodge_name": lodge_name,
             "lodge_number": lodge_number,
             "lodge_address": lodge_address,

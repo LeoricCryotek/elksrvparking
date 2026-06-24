@@ -100,6 +100,16 @@ class ElksLodgeSettings(models.Model):
              "rules, Wi-Fi info).",
     )
 
+    # RV services / amenities (Water, Power, Sewer, etc.)
+    rv_service_ids = fields.One2many(
+        "elks.rv.service",
+        "settings_id",
+        string="RV Services & Amenities",
+        help="Mark which services are available so they show on the public "
+             "RV parking pages. For services that are not on-site, set them "
+             "to 'Nearby' and enter the nearest location's address.",
+    )
+
     @api.onchange("rv_use_lodge_address")
     def _onchange_rv_use_lodge_address(self):
         if self.rv_use_lodge_address:
@@ -150,6 +160,45 @@ class ElksLodgeSettings(models.Model):
             })
         elif not published and existing:
             existing.unlink()
+
+    # ------------------------------------------------------------------
+    # RV services helpers
+    # ------------------------------------------------------------------
+    def get_website_rv_services(self):
+        """Services to display on the public website (on-site or nearby)."""
+        self.ensure_one()
+        return self.rv_service_ids.filtered(
+            lambda s: s.show_on_website
+            and s.availability in ("onsite", "nearby")
+        ).sorted(lambda s: (s.sequence, s.id))
+
+    @api.model
+    def _seed_default_rv_services(self):
+        """Create the default set of RV services on the singleton settings
+        record if it has none yet. Called from the module post-init hook."""
+        settings = self.sudo().search([], limit=1)
+        if settings and not settings.rv_service_ids:
+            Service = self.env["elks.rv.service"].sudo()
+            Service.create([
+                dict(vals, settings_id=settings.id)
+                for vals in Service._default_service_vals()
+            ])
+        return settings
+
+    def action_load_default_rv_services(self):
+        """Add any missing default services (by name) without duplicating
+        ones the user already has."""
+        self.ensure_one()
+        Service = self.env["elks.rv.service"]
+        existing = set(self.rv_service_ids.mapped("name"))
+        to_create = [
+            dict(vals, settings_id=self.id)
+            for vals in Service._default_service_vals()
+            if vals["name"] not in existing
+        ]
+        if to_create:
+            Service.create(to_create)
+        return True
 
     def action_open_rv_config(self):
         """Open the RV Parking configuration for the singleton settings record."""

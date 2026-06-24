@@ -4,3 +4,5 @@ access_rv_registration_manager,elks.rv.registration.manager,model_elks_rv_regist
 access_rv_quick_register_wizard_user,elks.rv.quick.register.wizard.user,model_elks_rv_quick_register_wizard,group_elksrvparking_user,1,1,1,0
 access_rv_occupancy_report_wizard_user,elks.rv.occupancy.report.wizard.user,model_elks_rv_occupancy_report_wizard,group_elksrvparking_user,1,1,1,0
 access_rv_extend_stay_wizard_user,elks.rv.extend.stay.wizard.user,model_elks_rv_extend_stay_wizard,group_elksrvparking_user,1,1,1,0
+access_rv_service_user,elks.rv.service.user,model_elks_rv_service,group_elksrvparking_user,1,1,1,1
+access_rv_service_manager,elks.rv.service.manager,model_elks_rv_service,group_elksrvparking_manager,1,1,1,1

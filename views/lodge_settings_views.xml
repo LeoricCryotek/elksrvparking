@@ -52,6 +52,34 @@
                         <field name="rv_slip_note" placeholder="e.g. Check in at the lodge office. Wi-Fi: ElksGuest / password123. Quiet hours 10pm-7am."
                                help="This note appears in a highlighted info box on the thank-you page and printable guest registration slip."/>
                     </group>
+                    <group string="Services &amp; Amenities">
+                        <div colspan="2" class="text-muted mb-2">
+                            Mark which services are available so they show on the public RV parking pages.
+                            Set a service to <b>Nearby</b> when it is not on-site, then enter the
+                            nearest location's name and address (e.g. sewer dumping address, water fill, power).
+                            Set to <b>Not available</b> to hide it.
+                        </div>
+                        <button name="action_load_default_rv_services" type="object"
+                                string="Load Default Services" class="btn-link"
+                                icon="fa-refresh" colspan="2"
+                                help="Add the common RV services (Water, Power, Sewer, Dump Station, WiFi, etc.). Existing entries are not duplicated."/>
+                        <field name="rv_service_ids" nolabel="1" colspan="2">
+                            <list editable="bottom">
+                                <field name="sequence" widget="handle"/>
+                                <field name="name" placeholder="e.g. Water Hookup"/>
+                                <field name="icon" placeholder="fa-tint" optional="hide"/>
+                                <field name="availability"/>
+                                <field name="detail" placeholder="e.g. 30/50 amp"/>
+                                <field name="location_name"
+                                       placeholder="Nearest place (nearby only)"
+                                       readonly="availability != 'nearby'"/>
+                                <field name="location_address"
+                                       placeholder="Address (nearby only)"
+                                       readonly="availability != 'nearby'"/>
+                                <field name="show_on_website" widget="boolean_toggle"/>
+                            </list>
+                        </field>
+                    </group>
                 </sheet>
             </form>
         </field>

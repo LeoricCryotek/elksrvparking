@@ -2,6 +2,53 @@
 <odoo>
 
     <!-- ============================================================
+         Reusable Services & Amenities block (expects `services`)
+         ============================================================ -->
+    <template id="rv_services_block" name="RV Services &amp; Amenities Block">
+        <t t-if="services">
+            <div class="card shadow-sm mb-4 rv-services-card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-3">
+                        <i class="fa fa-plug me-2" title="Services"/>
+                        Services &amp; Amenities
+                    </h5>
+                    <div class="row">
+                        <t t-foreach="services" t-as="svc">
+                            <div class="col-md-6 mb-2">
+                                <i t-attf-class="fa #{svc.icon or 'fa-check'} fa-fw me-2 text-success" title="Service"/>
+                                <strong><t t-esc="svc.name"/></strong>
+                                <t t-if="svc.detail">
+                                    <span class="text-muted"> — <t t-esc="svc.detail"/></span>
+                                </t>
+                                <t t-if="svc.availability == 'onsite'">
+                                    <span class="badge bg-success ms-2">On-site</span>
+                                </t>
+                                <t t-if="svc.availability == 'nearby'">
+                                    <span class="badge bg-info text-dark ms-2">Nearby</span>
+                                    <div class="small text-muted ms-4">
+                                        <t t-if="svc.location_name">
+                                            <t t-esc="svc.location_name"/><t t-if="svc.location_address">, </t>
+                                        </t>
+                                        <t t-if="svc.location_address">
+                                            <t t-esc="svc.location_address"/>
+                                        </t>
+                                        <t t-if="svc.map_query">
+                                            <a t-attf-href="https://www.google.com/maps/dir/?api=1&amp;destination=#{svc.map_query}"
+                                               target="_blank" rel="noopener" class="ms-1">
+                                                <i class="fa fa-map-marker me-1" title="Map"/>directions
+                                            </a>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ============================================================
          Availability Page — public calendar + occupancy counter
          ============================================================ -->
     <template id="rv_availability_page" name="RV Parking Availability">
@@ -143,6 +190,9 @@
                         </span>
                     </div>
 
+                    <!-- Services & Amenities -->
+                    <t t-call="elksrvparking.rv_services_block"/>
+
                     <!-- Reserve Button -->
                     <div class="text-center mb-5">
                         <a href="/rv-parking/request"
@@ -198,6 +248,9 @@
                                     aria-label="Close"/>
                         </div>
                     </t>
+
+                    <!-- Services & Amenities -->
+                    <t t-call="elksrvparking.rv_services_block"/>
 
                     <div class="card shadow-sm">
                         <div class="card-body">
@@ -465,6 +518,11 @@
                         </div>
                     </t>
 
+                    <!-- Services & Amenities -->
+                    <div class="text-start mt-4">
+                        <t t-call="elksrvparking.rv_services_block"/>
+                    </div>
+
                     <!-- Google Map -->
                     <t t-if="map_query">
                         <div class="mt-4 mb-3">
@@ -651,6 +709,29 @@
                                 </td>
                             </tr>
                         </table>
+
+                        <!-- Services & Amenities (print-friendly) -->
+                        <t t-if="services">
+                            <div style="border: 1px solid #ccc; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px;">
+                                <div style="font-size: 12px; font-weight: bold; color: #2e7d32; margin-bottom: 4px;">
+                                    Services &amp; Amenities
+                                </div>
+                                <t t-foreach="services" t-as="svc">
+                                    <div style="font-size: 12px; color: #333; margin: 2px 0;">
+                                        <t t-esc="svc.name"/>
+                                        <t t-if="svc.detail"> (<t t-esc="svc.detail"/>)</t>
+                                        <t t-if="svc.availability == 'onsite'">
+                                            — On-site
+                                        </t>
+                                        <t t-if="svc.availability == 'nearby'">
+                                            — Nearby:
+                                            <t t-if="svc.location_name"><t t-esc="svc.location_name"/>, </t>
+                                            <t t-esc="svc.location_address or ''"/>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
 
                         <!-- Special note info bubble -->
                         <t t-if="rv_slip_note">
