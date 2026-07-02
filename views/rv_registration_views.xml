@@ -30,7 +30,8 @@
 
                     <button name="action_reset_to_draft" type="object"
                             string="Reset to Draft"
-                            invisible="state != 'cancelled'"/>
+                            icon="fa-undo"
+                            invisible="state == 'draft'"/>
 
                     <button name="action_extend_stay" type="object"
                             string="Extend Stay"
@@ -110,6 +111,16 @@
                         </group>
                     </group>
                     <group>
+                        <group string="Occupancy">
+                            <field name="space_number"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="num_occupants"
+                                   readonly="state not in ('draft', 'registered')"/>
+                            <field name="num_pets"
+                                   readonly="state not in ('draft', 'registered')"/>
+                        </group>
+                    </group>
+                    <group>
                         <group string="FRS Journal Posting">
                             <field name="post_to_frs"/>
                             <field name="payment_account_id"
@@ -148,9 +159,12 @@
                 <field name="registration_date" optional="show"/>
                 <field name="check_in"/>
                 <field name="check_out" optional="show"/>
+                <field name="space_number" optional="show"/>
                 <field name="guest_name"/>
                 <field name="member_number" optional="show"/>
                 <field name="home_lodge_number" optional="show"/>
+                <field name="num_occupants" optional="hide"/>
+                <field name="num_pets" optional="hide"/>
                 <field name="nights"/>
                 <field name="total_amount" sum="Suggested Total" optional="hide"/>
                 <field name="amount_paid" sum="Total Paid"/>
@@ -225,6 +239,7 @@
                 <field name="guest_name"/>
                 <field name="member_number"/>
                 <field name="home_lodge_name"/>
+                <field name="space_number"/>
                 <field name="nights"/>
                 <field name="total_amount"/>
                 <field name="state"/>

@@ -93,6 +93,22 @@ class RvRegistration(models.Model):
     )
 
     # ------------------------------------------------------------------
+    # Occupancy
+    # ------------------------------------------------------------------
+    space_number = fields.Char(
+        string="Space #", tracking=True, index=True,
+        help="RV lot space assigned to this guest (e.g. 5, A-2, Back Row 3).",
+    )
+    num_occupants = fields.Integer(
+        string="People", default=1, tracking=True,
+        help="Number of people staying in the RV.",
+    )
+    num_pets = fields.Integer(
+        string="Pets", default=0, tracking=True,
+        help="Number of pets staying with the guest.",
+    )
+
+    # ------------------------------------------------------------------
     # Rates / totals
     # ------------------------------------------------------------------
     nightly_rate = fields.Float(
@@ -279,9 +295,31 @@ class RvRegistration(models.Model):
             )
 
     def action_reset_to_draft(self):
+        """Send a registration back to draft so it can be edited.
+
+        Allowed from registered, checked out, or cancelled. Any posted FRS
+        journal entry is left in place (a note is logged) so accounting is
+        not silently changed."""
         for rec in self:
-            if rec.state != "cancelled":
-                raise UserError(_("Only cancelled registrations can be reset."))
+            if rec.state == "draft":
+                raise UserError(_("This registration is already in draft."))
+            if rec.journal_entry_id:
+                rec.message_post(
+                    body=_(
+                        "<b>Reset to Draft</b> by %s. Note: FRS journal "
+                        "entry <b>%s</b> is already posted and was left "
+                        "unchanged — adjust it manually if the reservation "
+                        "amount changes.",
+                        self.env.user.name,
+                        rec.journal_entry_id.display_name,
+                    ),
+                    subtype_xmlid="mail.mt_note",
+                )
+            else:
+                rec.message_post(
+                    body=_("<b>Reset to Draft</b> by %s.", self.env.user.name),
+                    subtype_xmlid="mail.mt_note",
+                )
             rec.state = "draft"
 
     # ------------------------------------------------------------------
