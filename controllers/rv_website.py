@@ -22,6 +22,21 @@ class RvParkingWebsite(http.Controller):
             return request.env["elks.rv.service"].sudo().browse()
         return settings.get_website_rv_services()
 
+    def _no_cache(self, response):
+        """Tell Cloudflare / proxies / browsers never to cache this response
+        so live occupancy is always fresh."""
+        try:
+            response.headers["Cache-Control"] = (
+                "no-store, no-cache, must-revalidate, max-age=0"
+            )
+            response.headers["CDN-Cache-Control"] = "no-store"
+            response.headers["Cloudflare-CDN-Cache-Control"] = "no-store"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        except AttributeError:
+            pass
+        return response
+
     def _get_map_address(self, settings):
         """Build a one-line address for Google Maps, preferring RV-specific
         address fields and falling back to the lodge address."""
@@ -60,10 +75,13 @@ class RvParkingWebsite(http.Controller):
 
         A registration occupies a space when:
           check_in <= target_date < check_out  (check-out day is free)
-        Only draft and registered states count (not cancelled/checked_out).
+        Draft, registered, and checked-out stays all count so the calendar
+        shows real historical occupancy for past dates; only cancelled stays
+        are excluded. (Checked-out stays only span past date ranges, so they
+        do not affect current or future availability.)
         """
         return request.env["elks.rv.registration"].sudo().search_count([
-            ("state", "in", ("draft", "registered")),
+            ("state", "in", ("draft", "registered", "checked_out")),
             ("check_in", "<=", target_date),
             ("check_out", ">", target_date),
         ])
@@ -131,7 +149,7 @@ class RvParkingWebsite(http.Controller):
         lodge_name = settings.name if settings else "Elks Lodge"
         lodge_number = settings.lodge_number if settings else ""
 
-        return request.render("elksrvparking.rv_availability_page", {
+        return self._no_cache(request.render("elksrvparking.rv_availability_page", {
             "settings": settings,
             "services": self._get_services(settings),
             "lodge_name": lodge_name,
@@ -150,7 +168,7 @@ class RvParkingWebsite(http.Controller):
             "next_month": next_month,
             "next_year": next_year,
             "warning_threshold": warning_threshold,
-        })
+        }))
 
     # ------------------------------------------------------------------
     # JSON availability check for date range
@@ -216,6 +234,8 @@ class RvParkingWebsite(http.Controller):
             "home_lodge_name": "",
             "home_lodge_state": "",
             "contact_phone": "",
+            "num_occupants": 1,
+            "num_pets": 0,
         })
 
     @http.route("/rv-parking/request", type="http", auth="public",
@@ -231,6 +251,18 @@ class RvParkingWebsite(http.Controller):
         contact_phone = (post.get("contact_phone") or "").strip()
         check_in_str = post.get("check_in", "")
         nights = max(int(post.get("nights", 1) or 1), 1)
+
+        # Occupancy (required): People >= 1, Pets >= 0
+        raw_people = (post.get("num_occupants") or "").strip()
+        raw_pets = (post.get("num_pets") or "").strip()
+        try:
+            num_occupants = int(raw_people) if raw_people != "" else 0
+        except (ValueError, TypeError):
+            num_occupants = 0
+        try:
+            num_pets = int(raw_pets) if raw_pets != "" else -1
+        except (ValueError, TypeError):
+            num_pets = -1
         max_nights = settings.rv_max_nights if settings else 7
         if max_nights and nights > max_nights:
             nights = max_nights
@@ -242,8 +274,15 @@ class RvParkingWebsite(http.Controller):
 
         total_spaces = settings.rv_total_spaces if settings else 10
 
-        # --- Require member number ---
+        # --- Required-field validation (member #, People, Pets) ---
+        error = False
         if not member_number:
+            error = "Elks Member # is required to book an RV spot."
+        elif num_occupants < 1:
+            error = "Number of People is required (at least 1)."
+        elif num_pets < 0:
+            error = "Number of Pets is required (enter 0 if none)."
+        if error:
             nightly_rate = settings.rv_nightly_rate if settings else 25.0
             return request.render("elksrvparking.rv_request_page", {
                 "settings": settings,
@@ -256,13 +295,15 @@ class RvParkingWebsite(http.Controller):
                 "nights": nights,
                 "lodge_name": settings.name if settings else "Elks Lodge",
                 "lodge_number": settings.lodge_number if settings else "",
-                "error": "Elks Member # is required to book an RV spot.",
+                "error": error,
                 "guest_name": guest_name,
                 "member_number": member_number,
                 "home_lodge_number": home_lodge_number,
                 "home_lodge_name": home_lodge_name,
                 "home_lodge_state": home_lodge_state,
                 "contact_phone": contact_phone,
+                "num_occupants": num_occupants if num_occupants > 0 else 1,
+                "num_pets": num_pets if num_pets >= 0 else 0,
             })
 
         # --- Availability check: reject if any night in the stay is full ---
@@ -297,6 +338,8 @@ class RvParkingWebsite(http.Controller):
                 "home_lodge_name": home_lodge_name,
                 "home_lodge_state": home_lodge_state,
                 "contact_phone": contact_phone,
+                "num_occupants": num_occupants,
+                "num_pets": num_pets,
             })
 
         # Create draft registration
@@ -310,6 +353,8 @@ class RvParkingWebsite(http.Controller):
             "contact_phone": contact_phone,
             "check_in": check_in_date,
             "nights": nights,
+            "num_occupants": num_occupants,
+            "num_pets": num_pets,
             "state": "draft",
             "booking_source": "website",
         })

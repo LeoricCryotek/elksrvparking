@@ -38,20 +38,17 @@ class RvExtendStayWizard(models.TransientModel):
             )
         if self.extra_nights < 1:
             raise UserError(_("Please enter at least 1 extra night."))
-        if self.new_total > self.max_nights:
-            raise UserError(
-                _(
-                    "Cannot extend to %d nights — the maximum consecutive "
-                    "stay is %d nights."
-                )
-                % (self.new_total, self.max_nights)
-            )
+        # Staff may extend beyond the usual maximum; log it as an override
+        # rather than blocking.
+        over_max = bool(self.max_nights and self.new_total > self.max_nights)
         reg.nights = self.new_total
         reg.message_post(
             body=_(
                 "<b>Stay Extended</b> — added %d night(s), "
-                "now %d total (check-out %s).",
+                "now %d total (check-out %s).%s",
                 self.extra_nights, self.new_total, reg.check_out,
+                (_(" Staff override: above the usual maximum of %d nights.")
+                 % self.max_nights) if over_max else "",
             ),
             subtype_xmlid="mail.mt_note",
         )

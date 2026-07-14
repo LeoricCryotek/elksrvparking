@@ -85,11 +85,14 @@ class RvRegistration(models.Model):
     )
     check_out = fields.Date(
         string="Check-Out", tracking=True,
-        compute="_compute_check_out", store=True, readonly=False,
-        help="Computed from Check-In + Nights, or set manually.",
+        help="Departure date. Edit either date and Nights recalculates; "
+             "or enter Nights and this date fills in automatically.",
     )
     nights = fields.Integer(
         string="Nights", default=1, required=True, tracking=True,
+        help="Number of nights. Recalculated when the dates change; "
+             "if you type it (with a Check-In set) the Check-Out date "
+             "updates to match.",
     )
 
     # ------------------------------------------------------------------
@@ -185,13 +188,32 @@ class RvRegistration(models.Model):
     # ------------------------------------------------------------------
     # Computed
     # ------------------------------------------------------------------
-    @api.depends("check_in", "nights")
-    def _compute_check_out(self):
-        for rec in self:
-            if rec.check_in and rec.nights and rec.nights > 0:
-                rec.check_out = fields.Date.add(rec.check_in, days=rec.nights)
-            elif not rec.check_out:
-                rec.check_out = False
+    @api.onchange("check_in", "check_out")
+    def _onchange_stay_dates(self):
+        """Dates dictate nights: when either date changes, recompute nights."""
+        if self.check_in and self.check_out and self.check_out > self.check_in:
+            self.nights = (self.check_out - self.check_in).days
+
+    @api.onchange("nights")
+    def _onchange_nights(self):
+        """Nights dictates check-out: when nights is typed and a check-in is
+        set, drop the check-out date to match. Warn (but don't block) staff
+        when the stay is longer than the usual maximum."""
+        if self.check_in and self.nights and self.nights > 0:
+            self.check_out = fields.Date.add(self.check_in, days=self.nights)
+        settings = self.env["elks.lodge.settings"].sudo().search([], limit=1)
+        max_nights = settings.rv_max_nights if settings else 0
+        if max_nights and self.nights and self.nights > max_nights:
+            return {
+                "warning": {
+                    "title": _("Longer than the usual maximum"),
+                    "message": _(
+                        "%(n)d nights is above the usual maximum of "
+                        "%(m)d. You can still save this as a staff override.",
+                        n=self.nights, m=max_nights,
+                    ),
+                }
+            }
 
     @api.depends("nights", "nightly_rate")
     def _compute_total_amount(self):
@@ -201,12 +223,25 @@ class RvRegistration(models.Model):
     # ------------------------------------------------------------------
     # Constraints
     # ------------------------------------------------------------------
-    @api.constrains("nights")
+    @api.constrains("check_in", "check_out")
+    def _check_dates(self):
+        for rec in self:
+            if rec.check_in and rec.check_out and rec.check_out <= rec.check_in:
+                raise ValidationError(
+                    _("Check-Out (%(co)s) must be after Check-In (%(ci)s).",
+                      co=rec.check_out, ci=rec.check_in)
+                )
+
+    @api.constrains("nights", "booking_source")
     def _check_max_nights(self):
+        """Hard cap the maximum stay for public/website bookings only.
+        Staff-created registrations may exceed the limit as an override."""
         settings = self.env["elks.lodge.settings"].sudo().search([], limit=1)
         max_nights = settings.rv_max_nights if settings else 7
         for rec in self:
-            if rec.nights and rec.nights > max_nights:
+            if (rec.booking_source == "website"
+                    and rec.nights and max_nights
+                    and rec.nights > max_nights):
                 raise ValidationError(
                     _(
                         "%(nights)d nights exceeds the maximum consecutive "
@@ -219,6 +254,25 @@ class RvRegistration(models.Model):
     # ------------------------------------------------------------------
     # Defaults from Lodge Settings
     # ------------------------------------------------------------------
+    @staticmethod
+    def _derive_stay_vals(vals, base_check_in=None, base_check_out=None,
+                          base_nights=None):
+        """Keep check_in / check_out / nights consistent in a vals dict.
+
+        Dates win when a check-out is provided (nights = out - in); otherwise
+        nights + check_in fill in the check-out date."""
+        ci = fields.Date.to_date(vals.get("check_in", base_check_in))
+        co = fields.Date.to_date(vals.get("check_out", base_check_out))
+        n = vals.get("nights", base_nights)
+        if "check_out" in vals and ci and co and co > ci:
+            vals["nights"] = (co - ci).days
+        elif "nights" in vals and "check_out" not in vals and ci and n:
+            vals["check_out"] = fields.Date.add(ci, days=int(n))
+        elif "check_in" in vals and "check_out" not in vals \
+                and "nights" not in vals and ci and co and co > ci:
+            vals["nights"] = (co - ci).days
+        return vals
+
     @api.model_create_multi
     def create(self, vals_list):
         settings = self.env["elks.lodge.settings"].sudo().search([], limit=1)
@@ -230,7 +284,34 @@ class RvRegistration(models.Model):
                 )
             if not vals.get("nightly_rate") and settings:
                 vals["nightly_rate"] = settings.rv_nightly_rate or 25.0
+            # Fill in whichever of check_out / nights is missing.
+            ci = fields.Date.to_date(vals.get("check_in"))
+            co = fields.Date.to_date(vals.get("check_out"))
+            n = vals.get("nights")
+            if ci and co and co > ci:
+                vals["nights"] = (co - ci).days
+            elif ci and n:
+                vals["check_out"] = fields.Date.add(ci, days=int(n))
+            elif ci and not co and not n:
+                vals["nights"] = 1
+                vals["check_out"] = fields.Date.add(ci, days=1)
         return super().create(vals_list)
+
+    def write(self, vals):
+        stay_keys = ("check_in", "check_out", "nights")
+        if not any(k in vals for k in stay_keys):
+            return super().write(vals)
+        # Normalize per-record since base dates differ across records.
+        result = True
+        for rec in self:
+            rvals = self._derive_stay_vals(
+                dict(vals),
+                base_check_in=rec.check_in,
+                base_check_out=rec.check_out,
+                base_nights=rec.nights,
+            )
+            result = super(RvRegistration, rec).write(rvals) and result
+        return result
 
     @api.onchange("partner_id")
     def _onchange_partner_id(self):

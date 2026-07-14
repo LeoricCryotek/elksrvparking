@@ -404,6 +404,27 @@
                                     </div>
                                 </div>
 
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="num_occupants" class="form-label">
+                                            Number of People <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" name="num_occupants" id="num_occupants"
+                                               class="form-control" required="required" min="1"
+                                               t-att-value="num_occupants"
+                                               placeholder="e.g. 2"/>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="num_pets" class="form-label">
+                                            Number of Pets <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" name="num_pets" id="num_pets"
+                                               class="form-control" required="required" min="0"
+                                               t-att-value="num_pets"
+                                               placeholder="0 if none"/>
+                                    </div>
+                                </div>
+
                                 <!-- Live availability check area -->
                                 <div id="availability_result" class="mb-3"/>
 
